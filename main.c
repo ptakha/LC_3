@@ -18,20 +18,26 @@ enum {
 uint16_t reg[R_COUNT];
 
 enum {
-  OP_BR=0,   // Branch
-  OP_ADD,    // Add
-  OP_LD,     // Load
-  OP_ST,     // Store
-  OP_JSR,    // Jump register
-  OP_AND,    // Bitwise and
-  OP_LDR,    // Load register
-  OP_STR,    // Store register
-  OP_RTI,    //
-  OP_NOT,    // Bitwise not
-  OP_LDI,    // Load indirect
-  OP_STI,    // Store indirect
-  OP_JMP,    // Jump
-  OP_RES,    //
-  OP_LEA,    // Load effective address
-  OP_TRAP,   // Execute trap
+  OP_BR=0,  // Branch
+  OP_ADD,   // Add
+  OP_LD,    // Load
+  OP_ST,    // Store
+  OP_JSR,   // Jump register
+  OP_AND,   // Bitwise and
+  OP_LDR,   // Load register
+  OP_STR,   // Store register
+  OP_RTI,   //
+  OP_NOT,   // Bitwise not
+  OP_LDI,   // Load indirect
+  OP_STI,   // Store indirect
+  OP_JMP,   // Jump
+  OP_RES,   //
+  OP_LEA,   // Load effective address
+  OP_TRAP   // Execute trap
+};
+
+enum {
+  FL_POS = 1 << 0, // Positive flag, 1
+  FL_ZRO = 1 << 1, // Zero flag, 2
+  FL_NEG = 1 << 2  //
 };
