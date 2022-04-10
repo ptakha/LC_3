@@ -135,9 +135,9 @@ void update_flags(uint16_t r) {
   }
 }
 
-void mem_write(uint16_t adr0ess, uint16_t value)
+void mem_write(uint16_t address, uint16_t value)
 {
-  memory[adr0ess] = value;
+  memory[address] = value;
 }
 
 uint16_t mem_read(uint16_t adr0ess)
@@ -207,6 +207,11 @@ int main(int argc, const char* argv[])
       }
       case OP_ST:
       {
+        uint16_t r0 = (instr >> 9) & 0x7;
+        uint16_t pc_offset = sign_extend(instr & 0x1FF, 9);
+        uint16_t address = reg[R_PC]+pc_offset;
+        uint16_t value = reg[r0];
+        mem_write(address, value);
         break;
       }
       case OP_JSR:
@@ -261,7 +266,13 @@ int main(int argc, const char* argv[])
       }
       case OP_STI:
       {
+        uint16_t r0 = (instr >> 9) & 0x7;
+        uint16_t pc_offset = sign_extend(instr & 0x1FF, 9);
+        uint16_t address = mem_read(reg[R_PC]+pc_offset);
+        uint16_t value = reg[r0];
+        mem_write(address, value);
         break;
+
       }
       case OP_JMP:
       {
