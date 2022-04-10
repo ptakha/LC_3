@@ -44,7 +44,7 @@ enum {
   OP_LDI,   // Load indirect
   OP_STI,   // Store indirect
   OP_JMP,   // Jump
-  OP_RES,   //
+  OP_RET,   //
   OP_LEA,   // Load effective adr0ess
   OP_TRAP   // Execute trap
 } Opcodes;
@@ -245,6 +245,10 @@ int main(int argc, const char* argv[])
       }
       case OP_NOT:
       {
+        uint16_t r0 = (instr >> 9) & 0x7;
+        uint16_t r1 = (instr >> 6) & 0x7;
+        reg[r0] = ~reg[r1];
+        update_flags(r0);
         break;
       }
       case OP_LDI:
@@ -265,8 +269,9 @@ int main(int argc, const char* argv[])
         reg[R_PC] = reg[r1];
         break;
       }
-      case OP_RES:
+      case OP_RET:
       {
+        reg[R_PC] = reg[R_R7];
         break;
       }
       case OP_LEA:
