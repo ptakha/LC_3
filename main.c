@@ -120,7 +120,8 @@ uint16_t sign_extend(uint16_t x, int bitcount)
   return x;
 }
 
-void update_flags(uint16_t r) {
+void update_flags(uint16_t r)
+{
   if (reg[r] == 0)
   {
     reg[R_COND] = FL_ZRO;
@@ -140,9 +141,9 @@ void mem_write(uint16_t address, uint16_t value)
   memory[address] = value;
 }
 
-uint16_t mem_read(uint16_t adr0ess)
+uint16_t mem_read(uint16_t address)
 {
-  return memory[adr0ess];
+  return memory[address];
 }
 
 int main(int argc, const char* argv[])
@@ -242,6 +243,12 @@ int main(int argc, const char* argv[])
       }
       case OP_STR:
       {
+        uint16_t r0 = (instr >> 9) & 0x7;
+        uint16_t r1 = (instr >> 6) & 0x7;
+        uint16_t offset = sign_extend(instr & 0x3F, 6);
+        uint16_t address = mem_read(reg[r1]+offset);
+        uint16_t value = reg[r0];
+        mem_write(address, value);
         break;
       }
       case OP_RTI:
