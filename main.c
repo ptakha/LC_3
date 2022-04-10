@@ -175,10 +175,6 @@ int main(int argc, const char* argv[])
     // Get opcode from instruction
     op = instr >> 12;
     switch (op) {
-      case OP_BR:
-      {
-        break;
-      }
       case OP_ADD:
       {
         uint16_t DR = (instr >> 9) & 0x7;
@@ -197,6 +193,10 @@ int main(int argc, const char* argv[])
         update_flags(DR);
         break;
       }
+      case OP_BR:
+      {
+        break;
+      }
       case OP_LD:
       {
         break;
@@ -211,6 +211,20 @@ int main(int argc, const char* argv[])
       }
       case OP_AND:
       {
+        uint16_t DR = (instr >> 9) & 0x7;
+        uint16_t SR1 = (instr >> 6) & 0x7;
+        uint16_t imm_flag = (instr >> 5) & 0x1;
+        if (imm_flag)
+        {
+          uint16_t imm5 = sign_extend(instr & 0x1F, 5);
+          reg[DR] = reg[SR1] & imm5;
+        }
+        else
+        {
+          uint16_t SR2 = instr & 0x7;
+          reg[DR] = reg[SR1] & reg[SR2];
+        }
+        update_flags(DR);
         break;
       }
       case OP_LDR:
