@@ -196,6 +196,11 @@ int main(int argc, const char* argv[])
       }
       case OP_BR:
       {
+        uint16_t pc_offset = sign_extend(instr & 0x1FF, 9);
+        if (reg[R_COND] & (instr >> 9))
+        {
+          reg[R_PC] = reg[R_PC] + pc_offset;
+        }
         break;
       }
       case OP_LD:
@@ -217,7 +222,18 @@ int main(int argc, const char* argv[])
       }
       case OP_JSR:
       {
-        break;
+        reg[R_R7] = reg[R_PC];
+        bool flag = (instr >> 11) & 1;
+        if (flag)
+        {
+          uint16_t pc_offset = sign_extend(instr & 0x7FF, 11);
+          reg[R_PC] += pc_offset;
+        }
+        else
+        {
+          uint16_t r1 = (instr >> 6) & 0x7;
+          reg[R_PC] = reg[r1];
+        }
       }
       case OP_AND:
       {
