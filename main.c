@@ -67,12 +67,14 @@ uint16_t swap16(uint16_t x)
 void read_image_file(FILE* file)
 {
   // Where in memory place image
+  // 2 bytes which tell you begining of program
   uint16_t origin;
   fread(&origin, sizeof(origin), 1, file);
   origin = swap16(origin);
 
   uint16_t max_read = MEMORY_MAX-origin;
-  uint16_t* p = memory+origin;
+  //            begining of memory array + origin value
+  uint16_t* p = memory+origin;//p must point to index in memory array
   size_t read = fread(p, sizeof(uint16_t), max_read, file);
   while(read > 0)
   {
@@ -100,7 +102,7 @@ uint16_t sign_extend(uint16_t x, int bitcount)
   // we use 16 bits per value of x in calculations,
   // but in ADD instruction we get only 5 bits for immediate value
   //
-  // x is from 1 0000 = -15 to 0 1111 = 15
+  // x is from 1 0000 = -16 to 0 1111 = 15
   // -14 in 5 bits = 1 0001
   // ((1 0001) >> 4) & 1 =
   // 1 0001 >> 4 = 1 & 1 = 1 => x is negative
@@ -116,6 +118,21 @@ uint16_t sign_extend(uint16_t x, int bitcount)
     x = x | (0xFFFF << bitcount);
   }
   return x;
+}
+
+void update_flags(uint16_t r) {
+  if (reg[r] == 0)
+  {
+    reg[R_COND] = FL_ZRO;
+  }
+  else if (reg[r] >> 15)
+  {
+    reg[R_COND] = FL_NEG;
+  }
+  else
+  {
+    reg[R_COND] = FL_POS;
+  }
 }
 
 void mem_write(uint16_t address, uint16_t value)
@@ -155,43 +172,92 @@ int main(int argc, const char* argv[])
   {
     // Fetch instruction
     instr = mem_read(reg[R_PC]++);
+    // Get opcode from instruction
     op = instr >> 12;
     switch (op) {
       case OP_BR:
-      break;
+      {
+        break;
+      }
       case OP_ADD:
-      break;
+      {
+        uint16_t DR = (instr >> 9) & 0x7;
+        uint16_t SR1 = (instr >> 6) & 0x7;
+        uint16_t imm_flag = (instr >> 5) & 0x1;
+        if (imm_flag)
+        {
+          uint16_t imm5 = sign_extend(instr & 0x1F, 5);
+          reg[DR] = reg[SR1] + imm5;
+        }
+        else
+        {
+          uint16_t SR2 = instr & 0x7;
+          reg[DR] = reg[SR1] + reg[SR2];
+        }
+        update_flags(DR);
+        break;
+      }
       case OP_LD:
-      break;
+      {
+        break;
+      }
       case OP_ST:
-      break;
+      {
+        break;
+      }
       case OP_JSR:
-      break;
+      {
+        break;
+      }
       case OP_AND:
-      break;
+      {
+        break;
+      }
       case OP_LDR:
-      break;
+      {
+        break;
+      }
       case OP_STR:
-      break;
+      {
+        break;
+      }
       case OP_RTI:
-      break;
+      {
+        break;
+      }
       case OP_NOT:
-      break;
+      {
+        break;
+      }
       case OP_LDI:
-      break;
+      {
+        break;
+      }
       case OP_STI:
-      break;
+      {
+        break;
+      }
       case OP_JMP:
-      break;
+      {
+        break;
+      }
       case OP_RES:
-      break;
+      {
+        break;
+      }
       case OP_LEA:
-      break;
+      {
+        break;
+      }
       case OP_TRAP:
-      break;
+      {
+        break;
+      }
       default:
-      printf("Bad opcode - %d", op);
-      break;
+      {
+        printf("Bad opcode - %d", op);
+        break;
+      }
     }
   }
 }
