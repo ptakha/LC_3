@@ -37,7 +37,7 @@ enum {
   OP_ST,    // Store
   OP_JSR,   // Jump register
   OP_AND,   // Bitwise and
-  OP_Lr0,   // Load register
+  OP_LDR,   // Load register
   OP_STR,   // Store register
   OP_RTI,   //
   OP_NOT,   // Bitwise not
@@ -261,6 +261,8 @@ int main(int argc, const char* argv[])
       }
       case OP_JMP:
       {
+        uint16_t r1 = (instr >> 6) & 0x7;
+        reg[R_PC] = reg[r1];
         break;
       }
       case OP_RES:
