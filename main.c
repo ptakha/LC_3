@@ -55,6 +55,16 @@ enum {
   FL_NEG = 1 << 2  //
 } Flags;
 
+enum {
+  TRAP_GETC = 0x20,  // Get character from keyboard, not echoed onto the terminal
+  TRAP_OUT = 0x21,   // Output a character
+  TRAP_PUTS = 0x22,  // Output a word string
+  TRAP_IN = 0x23,    // Get character from keyboard, echoed onto terminal
+  TRAP_PUTSP = 0x24, // Output a byte string
+  TRAP_HALT = 0x25   // Halt the program
+} Trap_codes;
+
+
 enum { PC_START = 0x3000};
 
 
@@ -148,12 +158,14 @@ uint16_t mem_read(uint16_t address)
 
 int main(int argc, const char* argv[])
 {
-
+  // Setup
+  // Check number of arguments
   if (argc<2)
   {
     printf("Usage:\n lc3 [image-file-1]...\n");
     exit(2);
   }
+  // Load images
   for (int j=1;j<argc;j++)
   {
     if(!read_image(argv[j]))
@@ -323,6 +335,63 @@ int main(int argc, const char* argv[])
       }
       case OP_TRAP:
       {
+        reg[R_R7] = reg[R_PC];
+        switch (instr & 0xFF) {
+          case TRAP_IN:
+          {
+            printf("Enter a character: ");
+            char c = getchar();
+            putc(c, stdout);
+            fflush(stdout);
+            reg[R_R0] = (uint16_t)c;
+            update_flags(R_R0);
+            break;
+          }
+          case TRAP_OUT:
+          {
+            putc((char)reg[R_R0], stdout);
+            fflush(stdout);
+            break;
+          }
+          case TRAP_GETC:
+          {
+            reg[R_R0] = (uint16_t)getchar();
+            update_flags(R_R0);
+            break;
+          }
+          case TRAP_PUTS:
+          {
+            uint16_t* c = memory+reg[R_R0];
+            while (*c)
+            {
+              putc((char)*c, stdout);
+              c++;
+            }
+            fflush(stdout);
+            break;
+          }
+          case TRAP_PUTSP:
+          {
+            uint16_t* c = memory + reg[R_R0];
+            while (*c)
+            {
+                char char1 = (*c) & 0xFF;
+                putc(char1, stdout);
+                char char2 = (*c) >> 8;
+                if (char2) putc(char2, stdout);
+                ++c;
+            }
+            fflush(stdout);
+            break;
+          }
+          case TRAP_HALT:
+          {
+            puts("HALT");
+            fflush(stdout);
+            running = false;
+            break;
+          }
+        }
         break;
       }
       default:
@@ -332,4 +401,7 @@ int main(int argc, const char* argv[])
       }
     }
   }
+
+  //Shutdown
+
 }
