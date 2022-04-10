@@ -37,7 +37,7 @@ enum {
   OP_ST,    // Store
   OP_JSR,   // Jump register
   OP_AND,   // Bitwise and
-  OP_LDR,   // Load register
+  OP_Lr0,   // Load register
   OP_STR,   // Store register
   OP_RTI,   //
   OP_NOT,   // Bitwise not
@@ -45,7 +45,7 @@ enum {
   OP_STI,   // Store indirect
   OP_JMP,   // Jump
   OP_RES,   //
-  OP_LEA,   // Load effective address
+  OP_LEA,   // Load effective adr0ess
   OP_TRAP   // Execute trap
 } Opcodes;
 
@@ -135,14 +135,14 @@ void update_flags(uint16_t r) {
   }
 }
 
-void mem_write(uint16_t address, uint16_t value)
+void mem_write(uint16_t adr0ess, uint16_t value)
 {
-  memory[address] = value;
+  memory[adr0ess] = value;
 }
 
-uint16_t mem_read(uint16_t address)
+uint16_t mem_read(uint16_t adr0ess)
 {
-  return memory[address];
+  return memory[adr0ess];
 }
 
 int main(int argc, const char* argv[])
@@ -177,20 +177,20 @@ int main(int argc, const char* argv[])
     switch (op) {
       case OP_ADD:
       {
-        uint16_t DR = (instr >> 9) & 0x7;
-        uint16_t SR1 = (instr >> 6) & 0x7;
+        uint16_t r0 = (instr >> 9) & 0x7;
+        uint16_t r1 = (instr >> 6) & 0x7;
         uint16_t imm_flag = (instr >> 5) & 0x1;
         if (imm_flag)
         {
           uint16_t imm5 = sign_extend(instr & 0x1F, 5);
-          reg[DR] = reg[SR1] + imm5;
+          reg[r0] = reg[r1] + imm5;
         }
         else
         {
-          uint16_t SR2 = instr & 0x7;
-          reg[DR] = reg[SR1] + reg[SR2];
+          uint16_t r2 = instr & 0x7;
+          reg[r0] = reg[r1] + reg[r2];
         }
-        update_flags(DR);
+        update_flags(r0);
         break;
       }
       case OP_BR:
@@ -199,6 +199,10 @@ int main(int argc, const char* argv[])
       }
       case OP_LD:
       {
+        uint16_t r0 = (instr >> 9) & 0x7;
+        uint16_t pc_offset = sign_extend(instr & 0x1FF, 9);
+        reg[r0] = mem_read(reg[R_PC]+pc_offset);
+        update_flags(r0);
         break;
       }
       case OP_ST:
@@ -211,20 +215,20 @@ int main(int argc, const char* argv[])
       }
       case OP_AND:
       {
-        uint16_t DR = (instr >> 9) & 0x7;
-        uint16_t SR1 = (instr >> 6) & 0x7;
+        uint16_t r0 = (instr >> 9) & 0x7;
+        uint16_t r1 = (instr >> 6) & 0x7;
         uint16_t imm_flag = (instr >> 5) & 0x1;
         if (imm_flag)
         {
           uint16_t imm5 = sign_extend(instr & 0x1F, 5);
-          reg[DR] = reg[SR1] & imm5;
+          reg[r0] = reg[r1] & imm5;
         }
         else
         {
-          uint16_t SR2 = instr & 0x7;
-          reg[DR] = reg[SR1] & reg[SR2];
+          uint16_t r2 = instr & 0x7;
+          reg[r0] = reg[r1] & reg[r2];
         }
-        update_flags(DR);
+        update_flags(r0);
         break;
       }
       case OP_LDR:
@@ -245,6 +249,10 @@ int main(int argc, const char* argv[])
       }
       case OP_LDI:
       {
+        uint16_t r0 = (instr >> 9) & 0x7;
+        uint16_t pc_offset = sign_extend(instr & 0x1FF, 9);
+        reg[r0] = mem_read(mem_read(reg[R_PC]+pc_offset));
+        update_flags(r0);
         break;
       }
       case OP_STI:
